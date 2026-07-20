@@ -79,7 +79,10 @@
         totalEl.textContent = "Total: PHP 0.00";
         return;
       }
-      const total = equipment.daily_rate * days;
+      let total = equipment.daily_rate * days;
+      if (days >= 7) {
+        total *= 0.9;
+      }
       totalEl.textContent = `Total: PHP ${total.toFixed(2)} (${days} day${days > 1 ? "s" : ""})`;
     }
 
