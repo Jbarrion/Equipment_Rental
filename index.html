@@ -14,21 +14,22 @@
     .message { margin-top: 16px; padding: 10px; border-radius: 6px; }
     .ok { background: #e6f4ea; color: #1e7e34; }
     .err { background: #fdecea; color: #c0392b; }
+    .required { color: #c0392b; }
   </style>
 </head>
 <body>
   <h1>Book Equipment</h1>
 
-  <label for="equipment">Equipment</label>
+  <label for="equipment">Equipment<span class="required">*</label>
   <select id="equipment"></select>
 
   <label for="customer">Customer name</label>
   <input id="customer" type="text" placeholder="e.g. Jane Doe" />
 
-  <label for="from">Start date</label>
+  <label for="from">Start date<span class="required">*</label>
   <input id="from" type="date" />
 
-  <label for="to">End date</label>
+  <label for="to">End date<span class="required">*</label>
   <input id="to" type="date" />
 
   <div class="total" id="total">Total: PHP 0.00</div>
@@ -43,8 +44,18 @@
     async function loadEquipment() {
       const res = await fetch("/api/equipment");
       equipmentList = await res.json();
+
       const select = document.getElementById("equipment");
       select.innerHTML = "";
+
+      // Placeholder
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "-- Select Equipment --";
+      placeholder.selected = true;
+      placeholder.disabled = true;
+      select.appendChild(placeholder);
+
       equipmentList.forEach(item => {
         const opt = document.createElement("option");
         opt.value = item.id;
@@ -84,6 +95,15 @@
         total *= 0.9;
       }
       totalEl.textContent = `Total: PHP ${total.toFixed(2)} (${days} day${days > 1 ? "s" : ""})`;
+
+      function resetForm() {
+      document.getElementById("equipment").selectedIndex = 0; // Placeholder
+      document.getElementById("customer").value = "";
+      document.getElementById("from").value = "";
+      document.getElementById("to").value = "";
+
+      updateTotal();
+      }
     }
 
     async function createBooking() {
@@ -91,11 +111,22 @@
       messageEl.className = "";
       messageEl.textContent = "";
 
+      const equipment = document.getElementById("equipment").value;
+      const customer = document.getElementById("customer").value.trim();
+      const from = document.getElementById("from").value;
+      const to = document.getElementById("to").value;
+
+      if (!equipment || !from || !to) {
+        messageEl.className = "message err";
+        messageEl.textContent = "Please fill out all fields.";
+        return;
+      }
+
       const body = {
-        equipment_id: Number(document.getElementById("equipment").value),
-        customer: document.getElementById("customer").value,
-        from_date: document.getElementById("from").value,
-        to_date: document.getElementById("to").value,
+        equipment_id: Number(equipment),
+        customer: customer,
+        from_date: from,
+        to_date: to,
       };
 
       const res = await fetch("/api/bookings", {
@@ -108,6 +139,8 @@
       if (res.ok) {
         messageEl.className = "message ok";
         messageEl.textContent = `Booked! Total PHP ${data.total.toFixed(2)}.`;
+        await loadEquipment();
+        resetForm();
       } else {
         messageEl.className = "message err";
         messageEl.textContent = data.error;
