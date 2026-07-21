@@ -44,11 +44,9 @@
     async function loadEquipment() {
       const res = await fetch("/api/equipment");
       equipmentList = await res.json();
-
       const select = document.getElementById("equipment");
       select.innerHTML = "";
 
-      // Placeholder
       const placeholder = document.createElement("option");
       placeholder.value = "";
       placeholder.textContent = "-- Select Equipment --";
@@ -95,15 +93,6 @@
         total *= 0.9;
       }
       totalEl.textContent = `Total: PHP ${total.toFixed(2)} (${days} day${days > 1 ? "s" : ""})`;
-
-      function resetForm() {
-      document.getElementById("equipment").selectedIndex = 0; // Placeholder
-      document.getElementById("customer").value = "";
-      document.getElementById("from").value = "";
-      document.getElementById("to").value = "";
-
-      updateTotal();
-      }
     }
 
     async function createBooking() {
@@ -123,10 +112,10 @@
       }
 
       const body = {
-        equipment_id: Number(equipment),
-        customer: customer,
-        from_date: from,
-        to_date: to,
+        equipment_id: Number(document.getElementById("equipment").value),
+        customer: document.getElementById("customer").value,
+        from_date: document.getElementById("from").value,
+        to_date: document.getElementById("to").value,
       };
 
       const res = await fetch("/api/bookings", {
@@ -139,8 +128,6 @@
       if (res.ok) {
         messageEl.className = "message ok";
         messageEl.textContent = `Booked! Total PHP ${data.total.toFixed(2)}.`;
-        await loadEquipment();
-        resetForm();
       } else {
         messageEl.className = "message err";
         messageEl.textContent = data.error;

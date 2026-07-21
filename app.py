@@ -80,13 +80,10 @@ def dates_overlap(start_a, end_a, start_b, end_b):
     TODO (Task 1): implement.
     """
     
-    if end_a == start_b and not (start_a == end_a == start_b == end_b):
+    if start_a == end_b or end_a == start_b:
         return False
 
-    if end_b == start_a and not (start_a == end_a == start_b == end_b):
-        return False
-
-    return not (end_a < start_b or end_b < start_a)
+    return start_a <= end_b and start_b <= end_a
 
 
 def find_conflicting_booking(equipment_id, from_date, to_date, bookings):
@@ -171,7 +168,7 @@ def create_booking():
     equipment = get_equipment(data.get("equipment_id"))
     if equipment is None:
         return jsonify({"error": "Unknown equipment"}), 400
-    if equipment["status"] == "maintenance":
+    if equipment["status"] != "available":
         return jsonify({"error": f"{equipment['name']} is currently under maintenance and cannot be booked."}), 409
 
     from_date = parse_date(data["from_date"])
