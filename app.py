@@ -168,7 +168,7 @@ def create_booking():
     equipment = get_equipment(data.get("equipment_id"))
     if equipment is None:
         return jsonify({"error": "Unknown equipment"}), 400
-    if equipment["status"] != "available":
+    if equipment["status"] == "maintenance":
         return jsonify({"error": f"{equipment['name']} is currently under maintenance and cannot be booked."}), 409
 
     from_date = parse_date(data["from_date"])
